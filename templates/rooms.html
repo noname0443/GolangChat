@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Rooms</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f8f8f8;
+    }
+
+    .container {
+      width: 100%;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .chat-room {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-room img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .chat-room h3 {
+      font-size: 18px;
+      font-weight: normal;
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: 70vh;
+      min-height: 70vh;
+      width: 100%;
+      height: 50%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+      width: 80%;
+    }
+
+    .form input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      resize: none;
+      font-size: 16px;
+      align-self: center;
+    }
+
+    .form input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="list" id="list">
+
+  </div>
+  <form class="form" method="POST" action="/api/chats/make">
+    <input type="text" id="name" name="name" placeholder="Enter chat name">
+    <input type="submit" value="Submit">
+  </form>
+</div>
+<script>
+  list = document.getElementById("list")
+  function insertChat(name) {
+    list.innerHTML += `<div class="chat-room" onclick="location.href='/chat/#${name}'" style="cursor: pointer">
+    <img src="" alt="Room Photo">
+    <h3>${name}</h3>
+    </div>`
+  }
+
+  const Http = new XMLHttpRequest();
+  const url='/api/chats';
+  Http.open("GET", url);
+  Http.send()
+
+  Http.onload = (e) => {
+    let chats = JSON.parse(Http.responseText)
+    for (let i = 0; i < chats.length; i++) {
+      insertChat(chats[i].name)
+    }
+  }
+</script>
+</body>
+</html>

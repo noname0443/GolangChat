@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simple Chat</title>
+    <style type="text/css">
+        /* CSS styles for the chat messages */
+        #chat-messages {
+            height: calc(100% - 100px); /* Reduce the height to make room for the input form */
+            overflow-y: auto; /* Add a scrollbar if the messages overflow the container */
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .message .avatar {
+            float: left;
+            margin-right: 10px;
+            height: 64px;
+            width: 64px;
+        }
+        .message .username {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .message .timestamp {
+            font-size: 12px;
+            color: #777;
+        }
+        .message .text {
+            clear: right;
+            margin-top: 5px;
+            word-wrap: break-word;
+        }
+        /* CSS styles for the chat form */
+        .form {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            width: 80%;
+        }
+
+        .form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            resize: none;
+            font-size: 16px;
+            align-self: center;
+        }
+
+        .form button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .history {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 70vh;
+            min-height: 70vh;
+            width: 80%;
+            height: 50%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #f6f6f6;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            word-wrap: break-word;
+        }
+
+        .username {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .text {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* CSS styles for the sidebar */
+        .sidebar {
+            width: 20%;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-left: 20px;
+        }
+
+        /* Media query for small screens */
+        @media only screen and (max-width: 600px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 20px;
+            }
+            .history {
+                width: 100%;
+            }
+            .form {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="history" id="history">
+        <div id="chat-messages">
+        </div>
+    </div>
+    <div class="form">
+        <textarea id="message" placeholder="Type your message"></textarea>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div class="sidebar">
+        <form class="form" id="invite" onsubmit="sendInvite(); return false">
+            <input type="text" id="username" name="username" placeholder="Enter user name">
+            <input type="hidden" id="chat" name="chat" placeholder="Enter user name" value=document>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+</body>
+<script>
+    function sendInvite(){
+        let invite = document.getElementById("invite")
+        const XHR = new XMLHttpRequest();
+
+        let data = [
+            ["username", invite['username'].value],
+            ["chat", document.location.hash.substr(1)]
+        ]
+        alert(data)
+        const urlEncodedDataPairs = [];
+        for (const [name, value] of Object.entries(data)) {
+            urlEncodedDataPairs.push(`${encodeURIComponent(value[0])}=${encodeURIComponent(value[1])}`);
+        }
+        const urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+        XHR.open('POST', '/api/chats/invite');
+        XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        XHR.send(urlEncodedData);
+
+        return false
+    }
+
+    list = document.getElementById("chat-messages")
+
+
+    function insertMessage(username, content, time) {
+        list.innerHTML += `
+            <div class="message">
+                <img src="../resources/default.png" alt="Avatar" class="avatar">
+                <div class="message-content">
+                    <h4 class="username">${username}</h4>
+                    <p class="text">${content}</p>
+                </div>
+            </div>
+			`
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    var tmpSocket;
+    var sessionCookie = getCookie("Session");
+    var lastMessageTime = new Date();
+
+    function messageEventProcessor(event) {
+        let messages = JSON.parse(event.data)
+        if (messages == null) {
+            return
+        }
+        if (Array.isArray(messages)) {
+            for (let i = messages.length - 1; i >= 0; i--) {
+                insertMessage(messages[i].username, messages[i].content, messages[i].time)
+                if (lastMessageTime > Date.parse(messages[i].time))
+                    lastMessageTime = Date.parse(messages[i].time)
+            }
+        } else {
+            insertMessage(messages.username, messages.content, messages.time)
+            if (lastMessageTime > Date.parse(messages.time))
+                lastMessageTime = Date.parse(messages.time)
+        }
+        let content = document.getElementById('chat-messages');
+        content.scrollTo({
+            top: content.scrollHeight,
+        });
+    }
+
+    const socket = new WebSocket('ws://localhost:8888/ws');
+
+    let content = document.getElementById('chat-messages');
+    content.addEventListener('scroll', function() {
+        if (content.scrollTop  === 0 && (typeof tmpSocket !== WebSocket || tmpSocket.readyState === 3)) {
+            console.log(lastMessageTime)
+            tmpSocket = new WebSocket('ws://localhost:8888/ws');
+
+            let sessionCookie = getCookie("Session");
+
+            tmpSocket.onopen = function(e) {
+                console.log(typeof lastMessageTime)
+                tmpSocket.send(sessionCookie + " " + document.location.hash.substr(1) + " " + new Date(lastMessageTime).toISOString())
+            }
+            tmpSocket.onmessage = (event) => {
+                console.log(event.data)
+                messageEventProcessor(event);
+                tmpSocket.close()
+            }
+        }
+    });
+
+    socket.onopen = function(e) {
+        const now = new Date();
+        const rfc3339 = now.toISOString();
+        socket.send(sessionCookie + " " + document.location.hash.substr(1) + " " + rfc3339)
+    }
+    socket.onmessage = (event) => messageEventProcessor(event);
+    socket.onclose = (event) => {
+        alert("Error! Chat was closed.")
+    }
+
+    function sendMessage() {
+        var message = document.getElementById("message").value;
+        socket.send(message)
+        document.getElementById("message").value = "";
+    }
+</script>
+</html>
