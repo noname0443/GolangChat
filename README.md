@@ -1,6 +1,6 @@
 # GolangChat
 ## Description
-GolangChat is real-time message-service on golang language. It's provide users to
+GolangChat is real-time message-service on golang language which created for educational purposes. It's provide users to
 exchange message, save message history and makes new chats for your new contacts.
 It's not a social network just a chat.
 
