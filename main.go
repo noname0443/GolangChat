@@ -14,7 +14,7 @@ import (
 	"sync"
 )
 
-func main(){
+func main() {
 	log.Println("Connecting to PostgreSQL DBMS")
 	err, configs := Utility.GetConfig("config.ini")
 	if err != nil {
@@ -30,16 +30,16 @@ func main(){
 
 	var chatConnections sync.Map
 
-	go DBMS.PgGetNotify("user=postgres password=postgresql dbname=miniChat sslmode=disable", &chatConnections)
+	go DBMS.PgGetNotify(DBMSString, &chatConnections)
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	router.Static("/resources", "./resources")
-	router.POST("/api/login", func(context *gin.Context) {api.Login(context, db)})
-	router.POST("/api/register", func(context *gin.Context) {api.Register(context, db)})
-	router.GET("/api/chats", func(context *gin.Context) {api.GetChats(context, db)})
-	router.POST("/api/chats/make", func(context *gin.Context) {api.MakeChat(context, db)})
-	router.POST("/api/chats/invite", func(context *gin.Context) {api.InviteUserToChat(context, db)})
+	router.POST("/api/login", func(context *gin.Context) { api.Login(context, db) })
+	router.POST("/api/register", func(context *gin.Context) { api.Register(context, db) })
+	router.GET("/api/chats", func(context *gin.Context) { api.GetChats(context, db) })
+	router.POST("/api/chats/make", func(context *gin.Context) { api.MakeChat(context, db) })
+	router.POST("/api/chats/invite", func(context *gin.Context) { api.InviteUserToChat(context, db) })
 	router.GET("/ws", func(c *gin.Context) {
 		sockets.WSHandler(c.Writer, c.Request, db, &chatConnections)
 	})
