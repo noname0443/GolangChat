@@ -16,9 +16,9 @@ import (
 
 func main() {
 	log.Println("Connecting to PostgreSQL DBMS")
-	err, configs := Utility.GetConfig("config.ini")
+	err, configs := Utility.GetConfig()
 	if err != nil {
-		log.Fatal("Can't read config file.")
+		log.Fatal(err)
 	}
 	DBMSString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s", configs["user"], configs["password"], configs["dbname"], configs["sslmode"])
 	db, err := sql.Open("postgres", DBMSString)

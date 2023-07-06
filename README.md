@@ -10,6 +10,7 @@ Now users can
 3. Invite other users by their name (count of users in chat isn't limited)
 4. Send messages and get messages in real time
 ## Installation
+It's very important to set up all environment variables before launch program. You can use prepared scripts after reboot or write it to .bashrc/windows variables.
 ### Ubuntu
 ```bash
 sudo apt-get install postgresql
@@ -17,7 +18,8 @@ sudo apt-get install go
 mkdir GolangChat
 cd GolangChat
 git clone https://github.com/noname0443/GolangChat.git
-psql -U myuser -f FirstRun.sql
+psql -U myuser -f FirstRun.SQL
+source script.sh
 go build .
 ```
 ### Windows
@@ -25,7 +27,8 @@ go build .
 2. Install [PostgreSQL](https://www.postgresql.org/download/).
 3. Copy project from github
 4. Launch ```psql.exe -U myuser -f FirstRun.sql```
-5. Compile it with ```go build .```
+5. ./script.bat
+6. Compile it with ```go build .```
 
 ## Security
 Positive:
