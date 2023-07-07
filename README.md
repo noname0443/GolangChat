@@ -40,13 +40,26 @@ Negative:
 1. User's DBMS records have slow MD5 hash algorithm
 2. Messages which users send to server isn't encrypted.
 
-## Plans
-
-1. Make one-click button that will install all dependencies and construct working
-project.
-2. Make client-side message encryption (RAS, AES-256).
-3. Give users ability to leave from chats, remove other users
-   (with lower chat privileges)
-4. Update front-end design
-5. Update password hash algorithm and session control mechanism
-6. Use Redis to store active connections
+## To-Do
+- Database session clearer
+- Make client-side message encryption (RAS, AES-256).
+- Give users ability to leave from chats, remove other users, delete chats
+- Update front-end design
+- Make one-click button that will install all dependencies and construct working project. (Docker)
+- Websocket connection pool (Redis)
+- Add message queue (RabbitMQ)
+- Separate SQL queries from golang code to separate file (prepared procedures)
+- Get free ssl from https://letsencrypt.org/
+- Find html generator to improve front-end of chat
+- Invites in real-time with accept/deny
+- Use graphql with GIN
+- Refactor
+	- Clear sockets.go. It's too big and hard to read
+	- Use SHA256 instead of MD5
+	- Get database variables from environment instead of file
+	- Use SQL interface
+	- Use SQLX to make annotation for read data faster and in less code
+	- Add more comments to generate full godoc
+	- Use tests
+- Email confirm
+- Merge all separated connection processes in one with "pool of workers" and just use redis or RabbitMQ for messages. To store active sockets use map. Clear it's from closed sockets for every minute (or make it with events)
